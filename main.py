@@ -7,5 +7,5 @@ app = FastAPI()
 
 # Serve index.html
 @app.get("/", response_class=HTMLResponse)
-def serve_frontend():
-    return FileResponse("index.html")
+def serve_html():
+    return FileResponse(os.path.join(os.path.dirname(__file__), "index.html"))
