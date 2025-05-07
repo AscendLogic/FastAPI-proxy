@@ -1,90 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Chat with GPT</title>
-  <style>
-    body { font-family: Arial; max-width: 600px; margin: 2rem auto; padding: 1rem; }
-    textarea, input, button { width: 100%; padding: 10px; margin-top: 10px; }
-    #chat { white-space: pre-line; border: 1px solid #ccc; padding: 1rem; min-height: 200px; }
-  </style>
+  <meta charset="UTF-8">
+  <title>Talk to GPT</title>
 </head>
 <body>
-  <h2>Mom’s GPT Chat</h2>
-  <div id="chat"></div>
-  <textarea id="message" rows="3" placeholder="Type your message..."></textarea>
-  <button onclick="sendMessage()">Send</button>
+  <h1>Chat with Jefferson GPT</h1>
+  <textarea id="prompt" rows="5" cols="50" placeholder="Type your question here..."></textarea><br>
+  <button onclick="sendPrompt()">Send</button>
+
+  <h2>Response:</h2>
+  <pre id="response"></pre>
 
   <script>
-    const chat = document.getElementById('chat');
-    const apiUrl = "https://6a3c-24-170-244-166.ngrok-free.app/proxy/openai";
+    async function sendPrompt() {
+      const prompt = document.getElementById("prompt").value;
 
-async function sendMessage() {
-  const input = document.getElementById('message');
-  const userMessage = input.value.trim();
-  if (!userMessage) return;
+      const res = await fetch("/proxy/openai", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-User-ID": "mom"  // optional token tracking
+        },
+        body: JSON.stringify({
+          model: "gpt-3.5-turbo",
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: 100
+        })
+      });
 
-  const payload = {
-    model: "gpt-3.5-turbo",
-    messages: [{ role: "user", content: userMessage }],
-    max_tokens: 100
-  };
-
-  try {
-    const res = await fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-User-ID": "mom"
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await res.json();
-    const reply = data.choices?.[0]?.message?.content || "No response from GPT.";
-    document.getElementById('chat').innerText += `\nYou: ${userMessage}\nGPT: ${reply}\n`;
-  } catch (err) {
-    document.getElementById('chat').innerText += `\nError talking to server.\n`;
-  }
-
-  input.value = "";
-}
-
- 
-
-    async function sendMessage() {
-      const input = document.getElementById('message');
-      const userMessage = input.value.trim();
-      if (!userMessage) return;
-
-      chat.innerHTML += `\nYou: ${userMessage}`;
-
-      input.value = "";
-      const payload = {
-        model: "gpt-3.5-turbo",
-        messages: [{ role: "user", content: userMessage }],
-        max_tokens: 100
-      };
-
-      try {
-        const res = await fetch(apiUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-User-ID": "mom"
-          },
-          body: JSON.stringify(payload)
-        });
-
-        const data = await res.json();
-        const reply = data.choices?.[0]?.message?.content || "Error parsing reply.";
-        chat.innerHTML += `\nGPT: ${reply}`;
-      } catch (err) {
-        chat.innerHTML += `\nGPT: Error talking to server.`;
-      }
-
-      chat.scrollTop = chat.scrollHeight;
+      const data = await res.json();
+      document.getElementById("response").textContent =
+        data.choices?.[0]?.message?.content || "Something went wrong.";
     }
   </script>
 </body>
