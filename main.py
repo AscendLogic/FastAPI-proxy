@@ -9,7 +9,7 @@ app = FastAPI()
 # Allow CORS (so your frontend can talk to your backend)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # You can restrict this later
+    allow_origins=["https://fastapi-proxy-c71h.onrender.com"]
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
