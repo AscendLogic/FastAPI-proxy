@@ -32,4 +32,17 @@ async def proxy_openai(request: Request):
             raise ValueError("Missing OpenAI API key. Set 'JeffersonFisherKey' in Render environment.")
 
         # Call OpenAI Chat Completion
-        response = open
+        response = openai.chat.completions.create(
+        model=data["model"],
+        messages=data["messages"],
+        max_tokens=data.get("max_tokens", 100)
+    )
+   
+
+    except Exception as e:
+        print("🔥 ERROR in /proxy/openai")
+        print("Exception:", e)
+        traceback.print_exc()
+        return JSONResponse(status_code=500, content={"error": str(e)})
+    
+    return JSONResponse(content=response.model_dump())
