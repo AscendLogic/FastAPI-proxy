@@ -1,37 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Talk to GPT</title>
+  <meta charset="UTF-8" />
+  <title>Conflict Coach</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+
+    .message {
+      margin: 15px 0;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .user {
+      background-color: #e0f7fa;
+      text-align: right;
+    }
+
+    .assistant {
+      background-color: #fff9c4;
+      text-align: left;
+    }
+  </style>
 </head>
 <body>
-  <h1>Chat with Jefferson GPT</h1>
-  <textarea id="prompt" rows="5" cols="50" placeholder="Type your question here..."></textarea><br>
-  <button onclick="sendPrompt()">Send</button>
+  <h1>Conflict Coach</h1>
 
-  <h2>Response:</h2>
-  <pre id="response"></pre>
+  <textarea id="prompt" rows="4" placeholder="Type your message here..."></textarea><br />
+  <button onclick="sendMessage()">Send</button>
+
+  <div id="chat"></div>
 
   <script>
-    async function sendPrompt() {
-      const prompt = document.getElementById("prompt").value;
+    async function sendMessage() {
+      const input = document.getElementById("prompt");
+      const userMessage = input.value.trim();
+      if (!userMessage) return;
 
-      const res = await fetch("/proxy/openai", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-User-ID": "mom"  // optional token tracking
-        },
-        body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          messages: [{ role: "user", content: prompt }],
-          max_tokens: 100
-        })
-      });
+      // Display user message
+      appendMessage(userMessage, "user");
 
-      const data = await res.json();
-      document.getElementById("response").textContent =
-        data.choices?.[0]?.message?.content || "Something went wrong.";
+      // Clear input
+      input.value = "";
+
+      try {
+        const res = await fetch("/proxy/openai", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-User-ID": "user"
+          },
+          body: JSON.stringify({
+            model: "gpt-3.5-turbo",
+            messages: [
+              { role: "user", content: userMessage }
+            ],
+            max_tokens: 300
+          })
+        });
+
+        const data = await res.json();
+        const reply = data.choices?.[0]?.message?.content || "Something went wrong.";
+        appendMessage(reply, "assistant");
+
+      } catch (error) {
+        appendMessage("❌ Error talking to Conflict Coach.", "assistant");
+        console.error(error);
+      }
+    }
+
+    function appendMessage(text, role) {
+      const chat = document.getElementById("chat");
+      const div = document.createElement("div");
+      div.className = `message ${role}`;
+      div.textContent = text;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
     }
   </script>
 </body>
