@@ -3,36 +3,33 @@ from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import openai
 import os
+import traceback
 
 app = FastAPI()
 
-# Allow CORS (so your frontend can talk to your backend)
+# ✅ Enable CORS so the frontend can POST to the backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://fastapi-proxy-c71h.onrender.com"]
+    allow_origins=["*"],  # Replace "*" with your domain in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Serve index.html at root
+# ✅ Serve your HTML frontend at the root route
 @app.get("/", response_class=HTMLResponse)
-def serve_index():
+def serve_frontend():
     return FileResponse("index.html")
 
-# Proxy route to OpenAI
+# ✅ Proxy OpenAI request through your backend
 @app.post("/proxy/openai")
 async def proxy_openai(request: Request):
     try:
         data = await request.json()
-        user_id = request.headers.get("X-User-ID", "anonymous")
 
         openai.api_key = os.getenv("JeffersonFisherKey")
         if not openai.api_key:
-            return JSONResponse(status_code=500, content={"error": "Missing OpenAI API key"})
+            raise ValueError("Missing OpenAI API key. Set 'JeffersonFisherKey' in Render environment.")
 
-        response = openai.ChatCompletion.create(**data)
-        return JSONResponse(content=response)
-    
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        # Call OpenAI Chat Completion
+        response = open
